@@ -5,7 +5,7 @@ import { Jobs } from "../../../workers/job-processes";
 import { Tasks } from "../../../workers/tasks";
 import { jobRunner } from "../../job-runners";
 import { getServiceFromOrganization } from "../../service-vendors";
-import { log } from "../../../lib/log.js"
+import { log } from "../../../lib/log.js";
 // / All functions are OPTIONAL EXCEPT metadata() and const name=.
 // / DO NOT IMPLEMENT ANYTHING YOU WILL NOT USE -- the existence of a function adds behavior/UI (sometimes costly)
 
@@ -39,12 +39,12 @@ const lookupQuery = (campaignId, organizationId) => {
       campaign_id: campaignId,
       message_status: "needsMessage"
     })
-    .where(function() {
+    .where(function () {
       this.whereNull("status_code") // no entry
         .orWhere("status_code", 0); // unknown status
     });
   if (!getConfig("OPTOUTS_SHARE_ALL_ORGS")) {
-    query = query.where(function() {
+    query = query.where(function () {
       // FUTURE: consider leveraging other organizations
       // challenge 1: might get contact_number dupes w/o it
       // challenge 2: need to insert instead of update
@@ -123,10 +123,11 @@ export async function getCampaignData({
         scrubBadMobileNumsDeletedOnUpload,
         scrubMobileOptional
       },
-      fullyConfigured:
+      fullyConfigured: Boolean(
         scrubBadMobileNumsFinished ||
         scrubBadMobileNumsCount === 0 ||
         scrubMobileOptional
+      )
     };
   }
 }
@@ -203,10 +204,7 @@ export async function nextBatchJobLookups({
       scrubBadMobileNumsFinishedCount: contacts.length,
       scrubBadMobileNumsFinishedDeleteCount: deletedCount
     });
-    await r
-      .knex("job_request")
-      .where("id", job.id)
-      .delete();
+    await r.knex("job_request").where("id", job.id).delete();
     console.log(
       "scrub-bad-mobilenums finsihed job",
       job.id,
@@ -308,10 +306,7 @@ export async function nextBatchJobLookups({
       steps
     );
     log.error("scrub-bad-mobilenums error: ", err);
-    await r
-      .knex("job_request")
-      .where("id", job.id)
-      .delete();
+    await r.knex("job_request").where("id", job.id).delete();
   }
 }
 
